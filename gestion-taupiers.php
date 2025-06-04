@@ -96,9 +96,9 @@ class Gestion_Taupiers {
             'show_ui'             => true,
             'show_in_menu'        => true,
             'query_var'           => true,
-            'rewrite'             => array('slug' => 'taupiers'),
+            'rewrite'             => array('slug' => 'annuaire-taupiers/%taupier_category%', 'with_front' => false), // <--- LIGNE MODIFIÉE
             'capability_type'     => 'post',
-            'has_archive'         => true,
+            'has_archive'         => 'annuaire-taupiers', // <--- LIGNE MODIFIÉE
             'hierarchical'        => false,
             'menu_position'       => 5,
             'menu_icon'           => 'dashicons-businessman',
@@ -133,7 +133,7 @@ class Gestion_Taupiers {
             'show_ui'             => true,
             'show_admin_column'   => true,
             'query_var'           => true,
-            'rewrite'             => array('slug' => 'taupier-category')
+            'rewrite'             => array('slug' => 'annuaire-taupiers', 'with_front' => false) // <--- LIGNE MODIFIÉE
         ));
 
         // Tags de taupiers
@@ -596,6 +596,23 @@ class Gestion_Taupiers {
                 wp_enqueue_script('taupier-admin-gallery', plugins_url('js/taupier-admin-gallery.js', __FILE__), array('jquery', 'jquery-ui-sortable'), '1.0', true);
             }
         }
+    }
+
+    /**
+     * Remplace le placeholder %taupier_category% dans l'URL par le slug de la catégorie.
+     */
+    public function replace_taupier_category_in_permalinks($post_link, $post) {
+        if (is_object($post) && $post->post_type == 'taupier') {
+            $terms = wp_get_object_terms($post->ID, 'taupier_category');
+            if ($terms) {
+                // Remplacer le placeholder par le slug du premier terme trouvé
+                return str_replace('%taupier_category%', $terms[0]->slug, $post_link);
+            } else {
+                // S'il n'y a pas de catégorie, on la remplace par une valeur par défaut (ou on la retire)
+                return str_replace('/%taupier_category%', '', $post_link);
+            }
+        }
+        return $post_link;
     }
 
     /**
@@ -2284,6 +2301,9 @@ class Gestion_Taupiers_SEO {
 
         // Ajout d'OpenGraph et Twitter Cards
         add_action('wp_head', array($this, 'taupier_opengraph_twitter_tags')); // Combined and renamed
+
+        // Filtre pour remplacer le placeholder dans les permaliens
+        add_filter('post_type_link', array($this, 'replace_taupier_category_in_permalinks'), 10, 2);
     }
 
     /**
