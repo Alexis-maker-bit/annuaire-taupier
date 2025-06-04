@@ -52,7 +52,7 @@ class Gestion_Taupiers {
         add_filter('template_include', array($this, 'taupier_archive_template'));
 
         // Suppression des éléments non désirés
-        add_action('wp_head', array($this, 'remove_unwanted_elements'));
+        add_action('wp_head', array($this, 'remove_unwanted_elements')); // MODIFICATION: Cette fonction ne doit plus écho des styles
 
         // Enregistrement du type de commentaire personnalisé pour les avis
         add_action('init', array($this, 'register_taupier_review_post_type'));
@@ -653,149 +653,9 @@ class Gestion_Taupiers {
 
     /**
      * Supprime les éléments non désirés sur les pages de taupiers
+     * IMPORTANT: Cette fonction ne doit PAS écho de balises <style>
      */
-    public function remove_unwanted_elements() {
-        // This CSS block should ideally be in taupier-styles.css for better maintainability.
-        // For demonstration, it's kept here as per original structure.
-        echo '<style>
-            /* ===== Style général taupier ===== */
-            .taupier-single-container, .taupier-archive-container {
-                font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif;
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 2rem;
-            }
-
-            /* ===== Titres ===== */
-            .entry-title, .page-title, h3 {
-                color: #207648;
-                border-bottom: 2px solid #6B381F;
-                padding-bottom: 0.5rem;
-                margin-bottom: 1.5rem;
-            }
-
-            /* ===== Images ===== */
-            .taupier-featured-image img,
-            .taupier-photo-additionnelle img {
-                width: 100%;
-                border-radius: 10px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            }
-
-            /* ===== Détails taupier ===== */
-            .taupier-details, .taupier-faq, .taupier-reviews, .taupier-review-form {
-                background-color: #fdfdfd;
-                border: 1px solid #e2e8f0;
-                border-radius: 12px;
-                padding: 1.5rem;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-                margin-bottom: 2rem;
-            }
-
-            .taupier-info-list li {
-                margin-bottom: 0.6rem;
-            }
-
-            /* ===== FAQ ===== */
-            .taupier-faq .faq-item {
-                background-color: #fff;
-                border-left: 4px solid #207648;
-                padding: 1rem;
-                margin-bottom: 1rem;
-                border-radius: 6px;
-            }
-
-            .faq-question {
-                font-weight: bold;
-                color: #6B381F;
-            }
-
-            /* ===== Barre de recherche ===== */
-            .taupier-search-form {
-                background-color: #207648;
-                color: #fff;
-                border-radius: 8px;
-                padding: 1.5rem;
-            }
-
-            .taupier-search-form input,
-            .taupier-search-form select {
-                border: none;
-                border-radius: 6px;
-                padding: 0.7rem;
-            }
-
-            .taupier-search-form .search-button {
-                background-color: #6B381F;
-                color: #fff;
-                border-radius: 6px;
-                font-weight: bold;
-            }
-
-            .taupier-search-form .search-button:hover {
-                background-color: #532d17;
-            }
-
-            /* ===== Avis clients ===== */
-            .taupier-reviews .review-item {
-                border-bottom: 1px solid #e2e8f0;
-                padding-bottom: 1rem;
-                margin-bottom: 1rem;
-            }
-
-            .review-rating .star {
-                color: gold;
-            }
-
-            /* ===== Formulaire Avis ===== */
-            .taupier-review-form input,
-            .taupier-review-form textarea {
-                border-radius: 6px;
-                border: 1px solid #ddd;
-                padding: 0.7rem;
-            }
-
-            .submit-review-button {
-                background-color: #207648;
-                color: white;
-                border-radius: 6px;
-                font-weight: bold;
-            }
-
-            .submit-review-button:hover {
-                background-color: #185f38;
-            }
-
-            .rating-selector label {
-                color: #ddd;
-                cursor: pointer;
-                font-size: 1.5rem;
-            }
-
-            .rating-selector input:checked ~ label,
-            .rating-selector label:hover,
-            .rating-selector label:hover ~ label {
-                color: gold;
-            }
-
-            /* ===== Responsive Design ===== */
-            @media (max-width: 768px) {
-                .taupier-search-form form,
-                .taupier-details,
-                .taupier-faq,
-                .taupier-reviews,
-                .taupier-review-form {
-                    padding: 1rem;
-                }
-
-                .taupier-single-container,
-                .taupier-archive-container {
-                    padding: 1rem;
-                }
-            }
-
-        </style>';
-
+    public function remove_unwanted_elements() { //
         // Remove sidebar if theme supports it
         // This is a more direct way to remove sidebars conditionally
         if (is_singular('taupier') || is_post_type_archive('taupier') || is_tax('taupier_category') || is_tax('taupier_tag')) {
@@ -817,7 +677,7 @@ class Gestion_Taupiers {
      * @param string $content The post content.
      * @return string Filtered content.
      */
-    public function filter_taupier_content_unwanted_elements($content) {
+    public function filter_taupier_content_unwanted_elements($content) { //
         if (is_singular('taupier') || is_post_type_archive('taupier') || is_tax('taupier_category') || is_tax('taupier_tag')) {
             // Remove the "Découvrez combien de taupes..." questionnaire
             $pattern = '/Découvrez combien de taupes menacent votre jardin.*?3 mois<\/strong>/s';
