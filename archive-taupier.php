@@ -20,7 +20,13 @@ if (is_tax('taupier_category')) {
 
 <div id="primary" class="content-area taupier-archive-container">
     <main id="main" class="site-main" role="main">
-        <header class="page-header">
+        <?php 
+// Ajout du fil d'Ariane
+if (function_exists('display_taupier_breadcrumbs')) {
+    display_taupier_breadcrumbs();
+}
+?>
+<header class="page-header">
             <h1 class="page-title">
                 <?php
                 if (is_tax('taupier_category')) {
