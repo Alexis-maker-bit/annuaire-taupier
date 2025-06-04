@@ -1,0 +1,143 @@
+/* Styles pour le slider de produits */
+.taupe-product-section {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    margin: 30px 0;
+    border: 3px dashed #ffa500;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden; /* Important pour masquer les éléments en dehors du slider */
+}
+.taupe-product-section:before {
+    content: "🎯 En avant !";
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    background-color: #ffa500;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 5px;
+    z-index: 2;
+}
+
+.product-slider-container {
+    position: relative;
+    overflow: hidden; /* Cache les produits qui débordent */
+}
+
+.product-slider-wrapper {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    will-change: transform; /* Optimisation pour l'animation */
+}
+
+.product-item {
+    flex: 0 0 auto; /* Empêche les éléments de rétrécir */
+    width: 180px; /* Largeur fixe pour chaque carte de produit */
+    text-align: center;
+    border-radius: 8px;
+    padding: 10px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-right: 10px; /* Espace entre les produits */
+    box-sizing: border-box; /* Inclure padding et border dans la largeur */
+}
+/* Pas de margin-right pour le dernier élément */
+.product-item:last-child {
+    margin-right: 0;
+}
+
+.product-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+.product-item img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    display: block;
+    margin: 0 auto 5px; /* Centrer l'image */
+}
+.product-title {
+    font-size: 14px;
+    color: #333;
+    margin: 5px 0;
+    font-weight: 600;
+    min-height: 40px; /* Pour éviter les décalages si les titres sont de tailles différentes */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.product-price {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+.buy-button {
+    font-size: 12px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: calc(100% - 20px); /* Ajuste la largeur du bouton */
+    display: block;
+    margin: 0 auto;
+}
+.buy-button:hover {
+    background-color: #218838;
+}
+
+/* Contrôles du slider */
+.product-slider-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.product-slider-btn {
+    background-color: #6B381F; /* Couleur secondaire de ton thème */
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.product-slider-btn:hover {
+    background-color: #207648; /* Couleur primaire de ton thème */
+}
+
+.product-slider-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+@media (max-width: 600px) {
+    .product-item {
+        width: 150px; /* Légèrement plus petit sur mobile */
+    }
+    .product-slider-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+    }
+}
