@@ -2759,3 +2759,86 @@ $gestion_taupiers_seo = new Gestion_Taupiers_SEO();
 // Include external files
 require_once plugin_dir_path(__FILE__) . 'taupier-sitemap.php';
 require_once plugin_dir_path(__FILE__) . 'taupier-search.php';
+
+
+/**
+ * Affiche un fil d'Ariane avec données structurées JSON-LD.
+ */
+function display_taupier_breadcrumbs() {
+    // Ne pas afficher sur la page d'accueil
+    if (is_front_page()) {
+        return;
+    }
+
+    // Début du HTML
+    $breadcrumbs_html = '<nav class="taupier-breadcrumbs" aria-label="breadcrumb">';
+    $breadcrumbs_html .= '<ol itemscope itemtype="https://schema.org/BreadcrumbList">';
+
+    // Données pour le JSON-LD
+    $json_ld_items = [];
+
+    // 1. Accueil
+    $breadcrumbs_html .= '<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">';
+    $breadcrumbs_html .= '<a itemprop="item" href="' . esc_url(home_url()) . '"><span itemprop="name">Accueil</span></a>';
+    $breadcrumbs_html .= '<meta itemprop="position" content="1" />';
+    $breadcrumbs_html .= '</li>';
+    $json_ld_items[] = [
+        "@type" => "ListItem",
+        "position" => 1,
+        "name" => "Accueil",
+        "item" => esc_url(home_url())
+    ];
+
+    // 2. Page d'archive principale
+    $archive_link = get_post_type_archive_link('taupier');
+    if ($archive_link) {
+        $breadcrumbs_html .= '<li class="breadcrumb-separator">&rsaquo;</li>';
+        $breadcrumbs_html .= '<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">';
+        if (is_post_type_archive('taupier')) {
+            $breadcrumbs_html .= '<span itemprop="name">Annuaire des taupiers</span>';
+        } else {
+            $breadcrumbs_html .= '<a itemprop="item" href="' . esc_url($archive_link) . '"><span itemprop="name">Annuaire des taupiers</span></a>';
+        }
+        $breadcrumbs_html .= '<meta itemprop="position" content="2" />';
+        $breadcrumbs_html .= '</li>';
+        $json_ld_items[] = [
+            "@type" => "ListItem",
+            "position" => 2,
+            "name" => "Annuaire des taupiers",
+            "item" => esc_url($archive_link)
+        ];
+    }
+    
+    // 3. Page de catégorie
+    if (is_tax('taupier_category')) {
+        $term = get_queried_object();
+        if ($term) {
+            $breadcrumbs_html .= '<li class="breadcrumb-separator">&rsaquo;</li>';
+            $breadcrumbs_html .= '<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">';
+            $breadcrumbs_html .= '<span itemprop="name">' . esc_html($term->name) . '</span>';
+            $breadcrumbs_html .= '<meta itemprop="position" content="3" />';
+            $breadcrumbs_html .= '</li>';
+            $json_ld_items[] = [
+                "@type" => "ListItem",
+                "position" => 3,
+                "name" => esc_html($term->name),
+                "item" => get_term_link($term)
+            ];
+        }
+    }
+
+    $breadcrumbs_html .= '</ol></nav>';
+
+    // Script JSON-LD
+    $json_ld_script = '<script type="application/ld+json">';
+    $json_ld_script .= json_encode([
+        "@context" => "https://schema.org",
+        "@type" => "BreadcrumbList",
+        "itemListElement" => $json_ld_items
+    ]);
+    $json_ld_script .= '</script>';
+
+    // Afficher le tout
+    echo $json_ld_script;
+    echo $breadcrumbs_html;
+}
