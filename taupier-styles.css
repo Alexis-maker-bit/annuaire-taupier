@@ -961,3 +961,143 @@
 .taupier-breadcrumbs a:hover {
     text-decoration: underline;
 }
+
+/* Styles pour le slider de produits (depuis taupier-product-slider.css) */
+/* Note: J'ai fusionné les styles. S'il y avait des différences intentionnelles,
+   vous devrez les ajuster. J'ai priorisé les styles déjà présents dans le bloc
+   taupier-styles.css quand il y avait des redéfinitions. */
+
+/* .taupe-product-section a déjà été défini plus haut, je ne le répète pas.
+   Les styles pour .taupe-product-section:before aussi. */
+
+.product-slider-container { /* Vient de taupier-product-slider.css, peut être redondant ou nécessiter une fusion avec .produits-affiches-slider */
+    position: relative;
+    overflow: hidden; /* Cache les produits qui débordent */
+}
+
+.product-slider-wrapper { /* Vient de taupier-product-slider.css, peut être redondant ou nécessiter une fusion avec .product-slider */
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    will-change: transform; /* Optimisation pour l'animation */
+}
+
+/* .product-item a déjà été défini. Je vérifie les différences.
+   Celui de taupier-product-slider.css avait:
+   width: 180px;
+   margin-right: 10px;
+   box-sizing: border-box;
+   Celui de taupier-styles.css avait:
+   width: 160px; (dans le bloc .product-slider)
+   pas de margin-right direct mais un gap:10px sur .product-slider
+   pas de box-sizing direct.
+   Je garde la version de taupier-styles.css (160px, gap) pour l'instant car elle est plus intégrée.
+*/
+
+/* .product-item:last-child { margin-right: 0; } // A considérer si on utilise margin-right au lieu de gap */
+
+/* .product-item:hover a déjà été défini */
+/* .product-item img a déjà été défini */
+
+/* .product-title a déjà été défini.
+   Celui de taupier-product-slider.css avait:
+   font-weight: 600;
+   min-height: 40px;
+   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-overflow: ellipsis;
+   Celui de taupier-styles.css avait:
+   min-height: 42px; display: flex; align-items: center; justify-content: center;
+   Je fusionne en gardant le display:flex pour l'alignement vertical et le text-overflow.
+*/
+.product-title {
+    font-size: 14px;
+    color: #333;
+    margin: 5px 0;
+    font-weight: 600; /* Ajouté depuis product-slider.css */
+    min-height: 42px; /* Cohérent avec taupier-styles.css */
+    display: -webkit-box; /* Pour clamp */
+    -webkit-line-clamp: 2;  /* Pour clamp */
+    -webkit-box-orient: vertical; /* Pour clamp */
+    overflow: hidden; /* Pour clamp */
+    text-overflow: ellipsis; /* Pour clamp */
+    /* Remplacé par ce qui précède pour gérer le clamp, mais garder l'idée d'alignement si possible via flexbox sur un conteneur interne si nécessaire */
+    /* display: flex;
+    align-items: center;
+    justify-content: center; */
+}
+
+
+/* .product-price a déjà été défini.
+   Celui de taupier-product-slider.css avait: font-weight: bold;
+   Je l'ajoute.
+*/
+.product-price {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 10px;
+    font-weight: bold; /* Ajouté */
+}
+
+/* .buy-button a déjà été défini.
+   Celui de taupier-product-slider.css avait:
+   width: calc(100% - 20px); display: block; margin: 0 auto;
+   Celui de taupier-styles.css avait:
+   width: 100%; box-sizing: border-box;
+   Je garde width:100% et box-sizing:border-box pour la simplicité.
+*/
+
+/* Contrôles du slider de produits spécifiques à taupier-product-slider.css */
+/* Le sélecteur .product-slider-controls est déjà utilisé dans taupier-styles.css,
+   mais taupier-product-slider.css a .product-slider-controls et .product-slider-btn
+   pour des boutons qui seraient sous le slider, pas des flèches de chaque côté.
+   Cela indique potentiellement deux systèmes de slider différents ou une évolution.
+   Je vais ajouter les styles de .product-slider-btn mais il faudra vérifier quel JS est actif.
+   Les styles pour .product-slider-controls dans taupier-styles.css (flèches latérales)
+   sont plus susceptibles d'être ceux voulus si le JS pour product-slider est celui de taupier-scripts.js
+*/
+
+/* Contrôles du slider de taupier-product-slider.css (boutons en dessous) */
+.product-slider-controls { /* Redéfini ici, attention au conflit si les deux sliders sont actifs */
+    /* display: flex; /* Déjà dans taupier-styles.css mais pour flèches latérales */
+    /* justify-content: center; /* Nouveau pour boutons centrés en dessous */
+    gap: 10px; /* Nouveau */
+    margin-top: 15px; /* Nouveau */
+    /* Les autres propriétés de .product-slider-controls de taupier-styles.css (position:absolute etc.)
+       sont pour des flèches latérales, donc en conflit si on veut des boutons en dessous.
+       Il faut choisir un seul type de contrôle pour .product-slider ou utiliser des classes distinctes.
+    */
+}
+
+.product-slider-btn { /* Nouveau, pour les boutons prev/next sous le slider de taupier-product-slider.js */
+    background-color: #6B381F; /* Couleur secondaire de ton thème */
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.product-slider-btn:hover {
+    background-color: #207648; /* Couleur primaire de ton thème */
+}
+
+.product-slider-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* Media Query pour les boutons de product-slider-btn */
+@media (max-width: 600px) {
+    /* .product-item width a déjà été défini pour 600px dans taupier-styles.css */
+    .product-slider-btn { /* S'applique aux boutons de taupier-product-slider.js */
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+    }
+}
