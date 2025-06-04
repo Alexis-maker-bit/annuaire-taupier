@@ -933,3 +933,31 @@
         width: calc(100% - 10px);
     }
 }
+
+
+
+.taupier-breadcrumbs {
+    margin-bottom: 1.5rem;
+    font-size: 0.9em;
+    color: #555;
+}
+.taupier-breadcrumbs ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+.taupier-breadcrumbs li {
+    display: inline;
+}
+.taupier-breadcrumbs .breadcrumb-separator {
+    margin: 0 0.5em;
+}
+.taupier-breadcrumbs a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+.taupier-breadcrumbs a:hover {
+    text-decoration: underline;
+}
