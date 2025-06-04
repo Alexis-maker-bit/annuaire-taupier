@@ -69,6 +69,9 @@ class Gestion_Taupiers {
 
         // Ajout de l'admin pour les scripts
         add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'));
+
+        // Filtre pour remplacer le placeholder dans les permaliens
+        add_filter('post_type_link', array($this, 'replace_taupier_category_in_permalinks'), 10, 2);
     }
 
     /**
@@ -96,9 +99,9 @@ class Gestion_Taupiers {
             'show_ui'             => true,
             'show_in_menu'        => true,
             'query_var'           => true,
-            'rewrite'             => array('slug' => 'annuaire-taupiers/%taupier_category%', 'with_front' => false), // <--- LIGNE MODIFIÉE
+            'rewrite'             => array('slug' => 'annuaire-taupiers/%taupier_category%', 'with_front' => false),
             'capability_type'     => 'post',
-            'has_archive'         => 'annuaire-taupiers', // <--- LIGNE MODIFIÉE
+            'has_archive'         => 'annuaire-taupiers',
             'hierarchical'        => false,
             'menu_position'       => 5,
             'menu_icon'           => 'dashicons-businessman',
@@ -133,7 +136,7 @@ class Gestion_Taupiers {
             'show_ui'             => true,
             'show_admin_column'   => true,
             'query_var'           => true,
-            'rewrite'             => array('slug' => 'annuaire-taupiers', 'with_front' => false) // <--- LIGNE MODIFIÉE
+            'rewrite'             => array('slug' => 'annuaire-taupiers', 'with_front' => false)
         ));
 
         // Tags de taupiers
@@ -608,8 +611,11 @@ class Gestion_Taupiers {
                 // Remplacer le placeholder par le slug du premier terme trouvé
                 return str_replace('%taupier_category%', $terms[0]->slug, $post_link);
             } else {
-                // S'il n'y a pas de catégorie, on la remplace par une valeur par défaut (ou on la retire)
-                return str_replace('/%taupier_category%', '', $post_link);
+                // S'il n'y a pas de catégorie, on retire le placeholder et le slash qui le précède.
+                // Ceci évite d'avoir une URL comme /annuaire-taupiers//nom-du-taupier
+                // Il est préférable de s'assurer que chaque taupier a au moins une catégorie.
+                $post_link = str_replace('/%taupier_category%', '', $post_link);
+                return $post_link; 
             }
         }
         return $post_link;
@@ -621,7 +627,7 @@ class Gestion_Taupiers {
     public function taupier_template($template) {
         global $post;
 
-        if ($post->post_type === 'taupier') {
+        if (is_object($post) && $post->post_type === 'taupier') { // Vérifier si $post est un objet
             $template_path = $this->get_taupier_template_path('single-taupier.php');
             if (file_exists($template_path)) {
                 return $template_path;
@@ -2301,9 +2307,6 @@ class Gestion_Taupiers_SEO {
 
         // Ajout d'OpenGraph et Twitter Cards
         add_action('wp_head', array($this, 'taupier_opengraph_twitter_tags')); // Combined and renamed
-
-        // Filtre pour remplacer le placeholder dans les permaliens
-        add_filter('post_type_link', array($this, 'replace_taupier_category_in_permalinks'), 10, 2);
     }
 
     /**
@@ -2438,30 +2441,35 @@ class Gestion_Taupiers_SEO {
     public function taupier_document_title_parts($title_parts) {
         if (is_singular('taupier')) {
             global $post;
+            if (is_object($post)) { // S'assurer que $post est un objet
+                // Utilisation du titre SEO personnalisé s'il existe
+                $seo_title = get_post_meta($post->ID, '_taupier_seo_title', true);
 
-            // Utilisation du titre SEO personnalisé s'il existe
-            $seo_title = get_post_meta($post->ID, '_taupier_seo_title', true);
-
-            if (!empty($seo_title)) {
-                $title_parts['title'] = $seo_title;
-            } else {
-                // Titre par défaut amélioré
-                $default_title = $post->post_title . ' | Taupier Professionnel';
-                $zone = get_post_meta($post->ID, '_taupier_zone', true);
-                if (!empty($zone)) {
-                    $default_title .= ' - ' . $zone;
+                if (!empty($seo_title)) {
+                    $title_parts['title'] = $seo_title;
+                } else {
+                    // Titre par défaut amélioré
+                    $default_title = $post->post_title . ' | Taupier Professionnel';
+                    $zone = get_post_meta($post->ID, '_taupier_zone', true);
+                    if (!empty($zone)) {
+                        $default_title .= ' - ' . $zone;
+                    }
+                    $title_parts['title'] = $default_title;
                 }
-                $title_parts['title'] = $default_title;
             }
         } elseif (is_post_type_archive('taupier')) {
             $archive_title = get_option('taupier_archive_title', 'Annuaire des Taupiers Professionnels | Trouvez un Taupier Près de Chez Vous');
             $title_parts['title'] = $archive_title;
         } elseif (is_tax('taupier_category')) {
-            // Suppression de la condition et du titre spécifique aux catégories
-            $title_parts['title'] = get_option('taupier_archive_title', 'Annuaire des Taupiers Professionnels | Trouvez un Taupier Près de Chez Vous');
+            $term = get_queried_object();
+            if (is_object($term)) { // S'assurer que $term est un objet
+                 $title_parts['title'] = 'Taupiers en ' . $term->name . ' | Annuaire Professionnel';
+            }
         } elseif (is_tax('taupier_tag')) {
-            // Suppression de la condition et du titre spécifique aux tags
-            $title_parts['title'] = get_option('taupier_archive_title', 'Annuaire des Taupiers Professionnels | Trouvez un Taupier Près de Chez Vous');
+             $term = get_queried_object();
+            if (is_object($term)) { // S'assurer que $term est un objet
+                $title_parts['title'] = 'Experts Taupiers : ' . $term->name . ' | Annuaire Spécialisé';
+            }
         }
 
         return $title_parts;
@@ -2473,6 +2481,7 @@ class Gestion_Taupiers_SEO {
     public function taupier_head_metadata() {
         if (is_singular('taupier')) {
             global $post;
+            if(!is_object($post)) return; // S'assurer que $post est un objet
 
             // Récupération des données SEO personnalisées
             $seo_description = get_post_meta($post->ID, '_taupier_seo_description', true);
@@ -2529,18 +2538,25 @@ class Gestion_Taupiers_SEO {
 
             // Language tag (usually handled by WordPress itself, but good to ensure)
             echo '<meta property="og:locale" content="' . esc_attr(get_locale()) . '">' . "\n";
+
         } elseif (is_post_type_archive('taupier')) {
             $archive_description = get_option('taupier_archive_description', 'Découvrez notre annuaire de taupiers professionnels. Trouvez un expert en élimination de taupes près de chez vous pour protéger votre jardin.');
             echo '<meta name="description" content="' . esc_attr($archive_description) . '">' . "\n";
             echo '<link rel="canonical" href="' . esc_url(get_post_type_archive_link('taupier')) . '">' . "\n";
         } elseif (is_tax('taupier_category') || is_tax('taupier_tag')) {
             $term = get_queried_object();
-            $term_description = term_description($term->term_id, $term->taxonomy, false);
-            if (empty($term_description)) {
-                $term_description = 'Trouvez des taupiers spécialisés dans la catégorie ' . $term->name . '.';
+            if(is_object($term)){ // S'assurer que $term est un objet
+                $term_description = term_description($term->term_id, $term->taxonomy); // term_description() sanitizes
+                if (empty($term_description)) {
+                    if ($term->taxonomy === 'taupier_category') {
+                        $term_description = 'Trouvez les meilleurs taupiers professionnels dans la catégorie ' . $term->name . '. Services experts pour éliminer les taupes de votre jardin.';
+                    } elseif ($term->taxonomy === 'taupier_tag') {
+                         $term_description = 'Liste de taupiers avec la compétence ' . $term->name . '. Contactez un spécialiste pour un service efficace.';
+                    }
+                }
+                echo '<meta name="description" content="' . esc_attr(strip_tags($term_description)) . '">' . "\n"; // strip_tags pour enlever le <p> éventuel
+                echo '<link rel="canonical" href="' . esc_url(get_term_link($term)) . '">' . "\n";
             }
-            echo '<meta name="description" content="' . esc_attr($term_description) . '">' . "\n";
-            echo '<link rel="canonical" href="' . esc_url(get_term_link($term)) . '">' . "\n";
         }
     }
 
@@ -2548,7 +2564,7 @@ class Gestion_Taupiers_SEO {
      * Modifie l'extrait pour l'optimisation SEO
      */
     public function taupier_custom_excerpt($excerpt, $post) {
-        if ($post->post_type === 'taupier') {
+        if (is_object($post) && $post->post_type === 'taupier') { // Vérifier si $post est un objet
             // Récupération de la description SEO personnalisée
             $seo_description = get_post_meta($post->ID, '_taupier_seo_description', true);
 
@@ -2649,44 +2665,66 @@ class Gestion_Taupiers_SEO {
      * Ajout des balises OpenGraph et Twitter Cards
      */
     public function taupier_opengraph_twitter_tags() {
-        if (is_singular('taupier') || is_post_type_archive('taupier') || is_tax('taupier_category') || is_tax('taupier_tag')) {
-            $og_title = '';
-            $og_description = '';
-            $og_image = '';
-            $og_url = '';
-            $og_type = 'website'; // Default type
+        $og_title = '';
+        $og_description = '';
+        $og_image = '';
+        $og_url = '';
+        $og_type = 'website'; // Default type
 
-            if (is_singular('taupier')) {
-                global $post;
-                $og_title = get_post_meta($post->ID, '_taupier_seo_title', true);
-                if (empty($og_title)) {
-                    $og_title = get_the_title($post->ID);
-                }
+        if (is_singular('taupier')) {
+            global $post;
+            if(!is_object($post)) return; // S'assurer que $post est un objet
 
-                $og_description = get_post_meta($post->ID, '_taupier_seo_description', true);
-                if (empty($og_description)) {
-                    $og_description = has_excerpt($post->ID) ? get_the_excerpt($post->ID) : wp_trim_words(strip_shortcodes(wp_strip_all_tags($post->post_content)), 30, '...');
-                }
-
-                if (has_post_thumbnail($post->ID)) {
-                    $og_image = get_the_post_thumbnail_url($post->ID, 'large');
-                }
-                $og_url = get_permalink($post->ID);
-                $og_type = 'article';
-            } elseif (is_post_type_archive('taupier')) {
-                $og_title = get_option('taupier_archive_title', 'Annuaire des Taupiers Professionnels');
-                $og_description = get_option('taupier_archive_description', 'Découvrez notre annuaire de taupiers professionnels.');
-                $og_url = get_post_type_archive_link('taupier');
-            } elseif (is_tax('taupier_category') || is_tax('taupier_tag')) {
-                // Pour les taxonomies de taupiers, on reprend le titre et la description de l'archive principale
-                $og_title = get_option('taupier_archive_title', 'Annuaire des Taupiers Professionnels');
-                $og_description = get_option('taupier_archive_description', 'Découvrez notre annuaire de taupiers professionnels.');
-                $og_url = get_term_link(get_queried_object()); // L'URL reste celle de la taxonomie
+            $og_title = get_post_meta($post->ID, '_taupier_seo_title', true);
+            if (empty($og_title)) {
+                $og_title = get_the_title($post->ID);
             }
 
+            $og_description = get_post_meta($post->ID, '_taupier_seo_description', true);
+            if (empty($og_description)) {
+                $og_description = has_excerpt($post->ID) ? get_the_excerpt($post->ID) : wp_trim_words(strip_shortcodes(wp_strip_all_tags($post->post_content)), 30, '...');
+            }
+
+            if (has_post_thumbnail($post->ID)) {
+                $og_image = get_the_post_thumbnail_url($post->ID, 'large');
+            }
+            $og_url = get_permalink($post->ID);
+            $og_type = 'article';
+
+        } elseif (is_post_type_archive('taupier')) {
+            $og_title = get_option('taupier_archive_title', 'Annuaire des Taupiers Professionnels');
+            $og_description = get_option('taupier_archive_description', 'Découvrez notre annuaire de taupiers professionnels.');
+            $og_url = get_post_type_archive_link('taupier');
+
+        } elseif (is_tax('taupier_category') || is_tax('taupier_tag')) {
+            $term = get_queried_object();
+             if(is_object($term)){ // S'assurer que $term est un objet
+                if ($term->taxonomy === 'taupier_category') {
+                    $og_title = 'Taupiers en ' . $term->name . ' | Annuaire Professionnel';
+                } elseif ($term->taxonomy === 'taupier_tag') {
+                    $og_title = 'Experts Taupiers : ' . $term->name . ' | Annuaire Spécialisé';
+                } else {
+                    $og_title = get_option('taupier_archive_title', 'Annuaire des Taupiers Professionnels');
+                }
+
+                $og_description = term_description($term->term_id, $term->taxonomy);
+                if(empty($og_description)){
+                    if ($term->taxonomy === 'taupier_category') {
+                         $og_description = 'Trouvez les meilleurs taupiers professionnels dans la catégorie ' . $term->name . '.';
+                    } elseif ($term->taxonomy === 'taupier_tag') {
+                        $og_description = 'Liste de taupiers avec la compétence ' . $term->name . '.';
+                    } else {
+                        $og_description = get_option('taupier_archive_description', 'Découvrez notre annuaire de taupiers professionnels.');
+                    }
+                }
+                $og_url = get_term_link($term);
+             }
+        }
+
+        if (!empty($og_title)) { // Output only if we have a title
             // Ensure values are sanitized
             $og_title = sanitize_text_field($og_title);
-            $og_description = sanitize_text_field($og_description);
+            $og_description = sanitize_text_field(strip_tags($og_description)); // strip_tags for descriptions from term_description
             $og_url = esc_url($og_url);
             $og_image = esc_url($og_image);
 
@@ -2704,7 +2742,7 @@ class Gestion_Taupiers_SEO {
             echo '<meta property="og:site_name" content="' . esc_attr(get_bloginfo('name')) . '">' . "\n";
 
             // Twitter Cards
-            echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
+            echo '<meta name="twitter:card" content="summary_large_image">' . "\n"; // summary_large_image is better if an image exists
             echo '<meta name="twitter:title" content="' . $og_title . '">' . "\n";
             echo '<meta name="twitter:description" content="' . $og_description . '">' . "\n";
 
