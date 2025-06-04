@@ -29,14 +29,13 @@
     background: #fff;
     padding:15px;
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
+    
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .taupier-row:hover {
     transform: translateY(-4px);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }
 
 .taupier-row-title {
